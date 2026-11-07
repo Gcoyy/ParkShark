@@ -1,0 +1,200 @@
+import React, { useState, useRef } from 'react';
+import { View, StyleSheet, Image } from 'react-native';
+import { CameraView, useCameraPermissions } from 'expo-camera';
+import * as MediaLibrary from 'expo-media-library';
+import Button from './Button';
+
+const CameraScreen = ({ navigation }) => {
+  const [cameraPermission, requestCameraPermission] = useCameraPermissions();
+  const [mediaLibraryPermissionResponse, requestMediaLibraryPermissionResponse] = MediaLibrary.usePermissions();
+  const [image, setImage] = useState(null);
+  const [previousImage, setPreviousImage] = useState(null);
+  const [cameraProps, setCameraProps] = useState({
+    zoom: 0,
+    facing: 'front',
+    flash: 'on',
+    animateShutter: false,
+    enableTorch: false,
+  });
+
+  const cameraRef = useRef(null);
+
+  if (!cameraPermission || !mediaLibraryPermissionResponse) {
+    return <View />;
+  }
+
+  if (cameraPermission.status !== 'denied') {
+    requestCameraPermission();
+  }
+
+  const toggleProperty = (prop, option1, option2) => {
+    setCameraProps((current) => ({
+      ...current,
+      [prop]: current[prop] === option1 ? option2 : option1,
+    }));
+  };
+
+  const takePicture = async () => {
+    if (cameraRef.current) {  // Ensure only one picture can be taken
+      try {
+        const picture = await cameraRef.current.takePictureAsync();
+        setImage(picture.uri);  // Store the taken picture
+        // console.log('Previous image:', image);
+        // navigation.navigate('Input Report Details', { photo: image, latitude: 0.00, longitude: 0.00 });
+      } catch (err) {
+        console.log('Error while taking picture : ', err);
+      }
+    }
+  };
+
+  const savePicture = async () => {
+    if (image) {
+      try {
+        const mediaLibraryPermissionResponse = await MediaLibrary.requestPermissionsAsync();
+        if (mediaLibraryPermissionResponse.status === 'granted') {
+          const asset = await MediaLibrary.createAssetAsync(image);
+          await MediaLibrary.getAssetInfoAsync(asset.id);
+          setImage(null);
+
+
+          // Fetch the last saved image to display in the next screen
+          // fetchLastSavedImage();
+          console.log('Previous image:', image);
+          // Navigate to the next screen with the photo as a parameter
+          if (image) {
+            console.log('Previous image:', image);
+            navigation.navigate('Input Report Details', { photo: image, latitude: 0.00, longitude: 0.00 });
+          }
+        } else {
+          alert('Returning back to Home screen');
+          navigation.navigate('User');
+        }
+      } catch (err) {
+        console.log('Error while saving picture:', err);
+      }
+    }
+  };
+
+  // const fetchLastSavedImage = async () => {
+  //   try {
+  //     const dcimAlbum = await MediaLibrary.getAlbumAsync('DCIM');
+  //     if (dcimAlbum) {
+  //       const { assets } = await MediaLibrary.getAssetsAsync({
+  //         album: dcimAlbum,
+  //         sortBy: [[MediaLibrary.SortBy.creationTime, false]],
+  //         mediaType: MediaLibrary.MediaType.photo,
+  //         first: 1,
+  //       });
+
+  //       if (assets.length > 0) {
+  //         const assetInfo = await MediaLibrary.getAssetInfoAsync(assets[0].id);
+  //         setPreviousImage(assetInfo.localUri || assetInfo.uri);
+  //       } else {
+  //         setPreviousImage(null);
+  //       }
+  //     } else {
+  //       setPreviousImage(null);
+  //     }
+  //   } catch (error) {
+  //     console.log('Error fetching last saved image:', error);
+  //   }
+  // };
+
+  return (
+    <View style={styles.container}>
+      {!image ? (
+        <>
+          <View style={styles.header}>
+            <Button 
+              icon={cameraProps.flash === 'on' ? 'flash-on' : 'flash-off'} 
+              onPress={() => toggleProperty('flash', 'on', 'off')}
+            />
+            <Button 
+              icon='animation' 
+              color={cameraProps.animateShutter ? 'white' : '#404040'} 
+              onPress={() => toggleProperty('animateShutter', true, false)}
+            />
+            <Button 
+              icon={cameraProps.enableTorch ? 'flashlight-on' : 'flashlight-off'} 
+              onPress={() => toggleProperty('enableTorch', true, false)}
+            />
+          </View>
+          <CameraView 
+            style={styles.camera} 
+            zoom={cameraProps.zoom} 
+            facing={cameraProps.facing} 
+            flash={cameraProps.flash} 
+            animateShutter={cameraProps.animateShutter} 
+            enableTorch={cameraProps.enableTorch} 
+            ref={cameraRef}
+          />
+          <View style={styles.bottomControlsContainer}>
+            <Button 
+              icon='camera' 
+              size={60} 
+              style={{height: 60}} 
+              onPress={takePicture}  // Allow only one picture to be taken
+            />
+            <Button 
+              icon='flip-camera-ios' 
+              onPress={() => toggleProperty('facing', 'front', 'back')}
+              size={40}
+            />
+          </View>
+        </>
+      ) : (
+        <>
+          <Image source={{ uri: image }} style={styles.camera} />
+          <View style={styles.bottomControlsContainer}>
+            <Button 
+              icon='flip-camera-android' 
+              onPress={() => setImage(null)}  // Allow the user to go back to taking a picture
+            />
+            <Button 
+              icon='check' 
+              onPress={savePicture}  // Move to the next screen after saving the picture
+            />
+          </View>
+        </>
+      )}
+    </View>
+  );
+};
+
+export default CameraScreen;
+
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    backgroundColor: 'white',
+  },
+  header: {
+    height: 100,
+    backgroundColor: 'black',
+    flexDirection: 'row',
+    justifyContent: 'space-around',
+    alignItems: 'center',
+  },
+  camera: {
+    flex: 1,
+    width: '100%',
+  },
+  slider: {
+    flex: 1,
+    marginHorizontal: 10,
+  },
+  sliderContainer: {
+    position: 'absolute',
+    bottom: 120,
+    left: 20,
+    right: 20,
+    flexDirection: 'row',
+  },
+  bottomControlsContainer: {
+    height: 100,
+    backgroundColor: 'black',
+    flexDirection: 'row',
+    justifyContent: 'space-around',
+    alignItems: 'center',
+  },
+});

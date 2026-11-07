@@ -1,0 +1,50 @@
+{
+  "expo": {
+    "name": "ParkShark",
+    "slug": "parkshark",
+    "scheme": "ParkShark",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "icon": "./assets/icon.png",
+    "userInterfaceStyle": "light",
+    "newArchEnabled": true,
+    "splash": {
+      "image": "./assets/icon.png",
+      "resizeMode": "contain",
+      "backgroundColor": "#ffffff"
+    },
+    "ios": {
+      "supportsTablet": true
+    },
+    "android": {
+      "adaptiveIcon": {
+        "foregroundImage": "./assets/icon.png",
+        "backgroundColor": "#ffffff"
+      },
+      "config": {
+        "googleMaps": {
+          "apiKey": "AIzaSyBUgVdjKrs2vOuaFSP8rtRhk8hLae_7xHY"
+        }
+      },
+      "package": "com.gcoy.parkshark"
+    },
+    "web": {
+      "favicon": "./assets/favicon.png"
+    },
+    "plugins": [
+      "expo-router"
+    ],
+    "permissions": [
+      "CAMERA",
+      "MEDIA_LIBRARY"
+    ],
+    "extra": {
+      "router": {
+        "origin": false
+      },
+      "eas": {
+        "projectId": "2fc9d636-ed65-40b8-894b-ad8248685033"
+      }
+    }
+  }
+}
