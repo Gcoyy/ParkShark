@@ -1,6 +1,6 @@
-# ParkShark 2.0
+# ParkShark
 
-ParkShark 2.0 is a mobile parking violation reporting app built with React Native and Expo. It supports two user roles:
+ParkShark is a mobile parking violation reporting app built with React Native and Expo. It supports two user roles:
 
 - User: capture a parking violation photo, add details, pin a location, and submit a report.
 - Enforcer: view all unresolved reports on a map, review report details, and update incident status.
