@@ -193,4 +193,4 @@ npm run web
 
 ## License
 
-This project is currently unlicensed unless otherwise specified by the repository owner.
+This project is currently unlicensed.
